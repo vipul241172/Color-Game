@@ -119,15 +119,15 @@ playBtn.onclick = () => {
   const win = Math.random() < 0.5;
   if (win) {
     const winAmount = fee * 2;
-    const commission = winAmount * 0.02;
-    const payout = winAmount * 0.98;
+    const commission = winAmount * 0.20;
+    const payout = winAmount * 0.80;
     users['admin'].winning -= payout;
     uObj.winning += payout;
     users['admin'].winning += commission;
-    alert(`You won! You get ₹${payout.toFixed(2)} (after 2% commission).`);
+    alert(`You won! You get ₹${payout.toFixed(2)} (after 20% charges).`);
   } else {
     users['admin'].winning += fee;
-    alert(`You lost! ₹${fee.toFixed(2)} transferred to admin.`);
+    alert(`You lost! ₹${fee.toFixed(2)} .`);
   }
   uObj.temp = 0;
   saveAll();
