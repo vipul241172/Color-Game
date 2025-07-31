@@ -1,6 +1,6 @@
 let users = JSON.parse(localStorage.getItem('game_users') || '{}');
 let current = null;
-const defaultAdmin = { password: 'administrator@2025', winning: 0, bonus: 0, upi: '' };
+const defaultAdmin = { password: 'admin', winning: 0, bonus: 0, upi: '' };
 users['admin'] = users['admin'] || defaultAdmin;
 
 const authScreen = document.getElementById('auth-screen');
