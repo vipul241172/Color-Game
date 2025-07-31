@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Color Game By. Vipul</title>
+  <title>Color Game with Wallet & Auth</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .hidden { display: none; }
@@ -12,6 +12,7 @@
 </head>
 <body class="bg-gray-100 flex justify-center items-start py-10">
   <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <!-- Auth Forms -->
     <div id="auth-screen">
       <h2 class="text-xl font-bold mb-4 text-center">Sign Up / Login</h2>
       <form id="signup-form" class="mb-4">
@@ -26,6 +27,7 @@
       </form>
     </div>
 
+    <!-- Game & Wallet -->
     <div id="dashboard" class="hidden">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold">Welcome, <span id="display-user"></span></h2>
@@ -33,14 +35,22 @@
       </div>
       <p>Wallet Balance: ₹<span id="balance">0</span></p>
       <p>Play Fee Pending (Temp): ₹<span id="temp-balance">0</span></p>
-       <p>Developed By.Vipul Chauhan</p>
       <div id="admin-section" class="hidden mt-4">
         <h3 class="font-bold">Admin Wallet</h3>
         <p>Admin Balance: ₹<span id="admin-balance">0</span></p>
       </div>
       <hr class="my-4" />
+      <!-- Game Mode Selection -->
+      <div class="mb-4">
+        <label for="mode" class="block mb-1">Select Game Mode:</label>
+        <select id="mode" class="w-full p-2 border rounded">
+          <option value="4">4 Color Game</option>
+          <option value="2">2 Color Game</option>
+        </select>
+      </div>
+      <!-- Game -->
       <div>
-        <p class="mb-2">Enter amount to play and select at least 3 colors:</p>
+        <p class="mb-2">Enter amount to play and select colors:</p>
         <input id="play-amount" type="number" placeholder="Enter play amount" class="w-full mb-2 p-2 border rounded" min="1" />
         <button id="deposit-btn" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mb-2">Deposit & Pay Fee</button>
         <div id="deposit-msg" class="text-red-500 mb-2"></div>
@@ -50,8 +60,12 @@
       </div>
       <p id="result" class="mt-4 font-bold"></p>
       <button id="withdraw-btn" class="bg-green-500 text-white px-4 py-2 rounded w-full mt-4">Withdraw via UPI</button>
+      <footer class="text-center mt-6 text-sm text-gray-500">Developed by Vipul Chauhan</footer>
     </div>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    // trimmed JavaScript for brevity in display
+  </script>
 </body>
 </html>
