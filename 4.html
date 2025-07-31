@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Color Game with Wallet & Auth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .hidden { display: none; }
+    .color-box { width: 50px; height: 50px; margin: 5px; cursor: pointer; border: 2px solid #ccc; }
+    .selected { border-color: #000; }
+    #user-list { list-style: none; padding: 0; }
+    #user-list li { padding: 8px; margin: 4px 0; background: #f3f3f3; border: 1px solid #ccc; cursor: move; }
+  </style>
+</head>
+<body class="bg-gray-100 flex justify-center items-start py-10">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <!-- Auth Forms -->
+    <div id="auth-screen">
+      <h2 class="text-xl font-bold mb-4 text-center">Sign Up / Login</h2>
+      <form id="signup-form" class="mb-4">
+        <input id="signup-username" type="text" placeholder="Username" class="w-full mb-2 p-2 border rounded" required />
+        <input id="signup-password" type="password" placeholder="Password" class="w-full mb-2 p-2 border rounded" required />
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Sign Up</button>
+      </form>
+      <form id="login-form">
+        <input id="login-username" type="text" placeholder="Username" class="w-full mb-2 p-2 border rounded" required />
+        <input id="login-password" type="password" placeholder="Password" class="w-full mb-2 p-2 border rounded" required />
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Login</button>
+      </form>
+      <p class="text-right mt-1">
+        <a href="#" id="reset-link" class="text-blue-500 underline">Forgot Password?</a>
+      </p>
+    </div>
+
+    <!-- Game & Wallet -->
+    <div id="dashboard" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">Welcome, <span id="display-user"></span></h2>
+        <button id="logout-btn" class="text-red-500">Logout</button>
+      </div>
+
+      <!-- User view -->
+      <div id="user-section">
+        <p>Wallet Balance: ₹<span id="balance">0</span></p>
+        <p>Play Fee Pending (Temp): ₹<span id="temp-balance">0</span></p>
+        <hr class="my-4" />
+        <div class="mb-4">
+          <label for="mode" class="block mb-1">Select Game Mode:</label>
+          <select id="mode" class="w-full p-2 border rounded">
+            <option value="4">4 Color Game</option>
+            <option value="2">2 Color Game</option>
+          </select>
+        </div>
+        <div>
+          <p class="mb-2">Enter amount to play and select colors:</p>
+          <input id="play-amount" type="number" placeholder="Enter play amount" class="w-full mb-2 p-2 border rounded" min="1" />
+          <button id="deposit-btn" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mb-2">Deposit & Pay Fee</button>
+          <div id="deposit-msg" class="text-red-500 mb-2"></div>
+          <button id="add-funds-btn" class="bg-blue-500 text-white px-4 py-2 rounded w-full mb-4 hidden">Add Funds</button>
+          <div id="colors" class="flex flex-wrap"></div>
+          <button id="play-btn" class="bg-indigo-500 text-white px-4 py-2 rounded mt-4" disabled>Play</button>
+        </div>
+        <p id="result" class="mt-4 font-bold"></p>
+      </div>
+
+      <!-- Admin view -->
+      <div id="admin-section" class="hidden mt-4">
+        <h3 class="font-bold mb-2">Registered Users (Drag to reorder):</h3>
+        <ul id="user-list"></ul>
+        <hr class="my-4" />
+        <h3 class="font-bold">Admin Wallet</h3>
+        <p>Admin Balance: ₹<span id="admin-balance">0</span></p>
+      </div>
+
+      <button id="withdraw-btn" class="bg-green-500 text-white px-4 py-2 rounded w-full mt-4">Withdraw via UPI</button>
+      <footer class="text-center mt-6 text-sm text-gray-500">Developed by Vipul Chauhan</footer>
+    </div>
+  </div>
+
+  <script>
+    // --- Data & Session ---
+    let users = JSON.parse(localStorage.getItem('game_users') || '{}');
+    // 1) Give every existing non-admin user a one-time ₹50 bonus
+    Object.keys(users).forEach(u => {
+      if (u !== 'admin') users[u].bonus = (users[u].bonus||0) + 50;
+    });
+    localStorage.setItem('game_users', JSON.stringify(users));
+
+    let current = localStorage.getItem('currentUser') || null;
+    let lastActive = Date.now();
+    const defaultAdmin = { password: 'admin', winning: 0, bonus: 0, upi: '' };
+    users['admin'] = users['admin'] || defaultAdmin;
+
+    // Auto-logout after 5min inactivity
+    ['click','keypress'].forEach(evt => document.addEventListener(evt, () => lastActive = Date.now()));
+    setInterval(()=>{
+      if (current && Date.now() - lastActive > 5*60*1000) {
+        logout(); alert('Logged out due to inactivity.');
+      }
+    }, 60*1000);
+
+    // Element refs
+    const authScreen   = document.getElementById('auth-screen');
+    const dashboard    = document.getElementById('dashboard');
+    const userSection  = document.getElementById('user-section');
+    const adminSection = document.getElementById('admin-section');
+    const displayUser  = document.getElementById('display-user');
+    const userList     = document.getElementById('user-list');
+
+    // Reset password
+    document.getElementById('reset-link').onclick = e => {
+      e.preventDefault();
+      const u = prompt("Enter your username to reset password:");
+      if (!u || !users[u]) return alert("User not found.");
+      const newP = prompt("Enter your new password:");
+      if (!newP) return alert("Password cannot be empty.");
+      users[u].password = newP;
+      localStorage.setItem('game_users', JSON.stringify(users));
+      alert("Password reset! Please login with new password.");
+    };
+
+    // Signup
+    document.getElementById('signup-form').onsubmit = e => {
+      e.preventDefault();
+      const u = document.getElementById('signup-username').value.trim();
+      const p = document.getElementById('signup-password').value;
+      if (users[u]) return alert('User already exists');
+      users[u] = { password: p, winning:0, bonus:50, temp:0, upi:'' };
+      localStorage.setItem('game_users', JSON.stringify(users));
+      alert('User created! ₹50 bonus credited. Please login.');
+    };
+
+    // Login
+    document.getElementById('login-form').onsubmit = e => {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
+      if (!users[u] || users[u].password !== p) return alert('Invalid credentials');
+      current = u; localStorage.setItem('currentUser', current);
+      showDashboard();
+    };
+
+    // Logout
+    document.getElementById('logout-btn').onclick = logout;
+    function logout(){
+      current = null;
+      localStorage.removeItem('currentUser');
+      authScreen.classList.remove('hidden');
+      dashboard.classList.add('hidden');
+    }
+
+    // Persist session
+    window.onload = () => {
+      if (current && users[current]) showDashboard();
+    };
+
+    // Show dashboard
+    function showDashboard(){
+      authScreen.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      displayUser.innerText = current;
+      lastActive = Date.now();
+
+      if (current === 'admin') {
+        // build draggable list
+        userList.innerHTML = '';
+        Object.keys(users).filter(u => u!=='admin').forEach(u => {
+          const li = document.createElement('li');
+          li.textContent = u;
+          li.draggable = true;
+          li.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', u));
+          li.addEventListener('dragover', e => e.preventDefault());
+          li.addEventListener('drop', e => {
+            e.preventDefault();
+            const src = e.dataTransfer.getData('text');
+            const tgt = li.textContent;
+            const items = [...userList.children].map(el=>el.textContent);
+            const i1 = items.indexOf(src), i2 = items.indexOf(tgt);
+            userList.innerHTML = '';
+            items.splice(i1,1); items.splice(i2,0,src);
+            items.forEach(name=>{
+              const nli = document.createElement('li'); nli.textContent = name; nli.draggable=true;
+              userList.appendChild(nli);
+            });
+          });
+          userList.appendChild(li);
+        });
+        userSection.classList.add('hidden');
+        adminSection.classList.remove('hidden');
+        document.getElementById('admin-balance').innerText = users['admin'].winning.toFixed(2);
+      } else {
+        userSection.classList.remove('hidden');
+        adminSection.classList.add('hidden');
+        updateBalances();
+        renderGame();
+      }
+    }
+
+    // Update balances (user)
+    function updateBalances(){
+      const uObj = users[current];
+      document.getElementById('balance').innerText = (uObj.winning + uObj.bonus).toFixed(2);
+      document.getElementById('temp-balance').innerText = uObj.temp.toFixed(2);
+    }
+
+    // Game init
+    function renderGame(){
+      document.getElementById('mode').onchange   = renderColors;
+      document.getElementById('deposit-btn').onclick = depositHandler;
+      document.getElementById('add-funds-btn').onclick = () => alert('Add Funds not implemented');
+      document.getElementById('play-btn').onclick = playHandler;
+      renderColors();
+    }
+
+    // Color rendering
+    function renderColors(){
+      const count = parseInt(document.getElementById('mode').value);
+      const C = document.getElementById('colors');
+      C.innerHTML = '';
+      ['red','blue','green','yellow','purple','orange']
+        .sort(()=>0.5-Math.random()).slice(0,count)
+        .forEach(c=>{
+          const b = document.createElement('div');
+          b.className = 'color-box bg-'+c+'-500';
+          b.dataset.color = c;
+          b.onclick = ()=>b.classList.toggle('selected');
+          C.appendChild(b);
+        });
+    }
+
+    // Deposit handler
+    function depositHandler(){
+      const fee = parseFloat(document.getElementById('play-amount').value);
+      const m = document.getElementById('deposit-msg');
+      m.innerText = '';
+      if (!fee || fee<=0) return m.innerText='Enter valid amount';
+      const uObj = users[current];
+      if (uObj.winning + uObj.bonus < fee) return m.innerText='Insufficient funds';
+      const from = uObj.bonus>=fee?'bonus':'winning';
+      uObj[from] -= fee; uObj.temp = fee;
+      localStorage.setItem('game_users', JSON.stringify(users));
+      updateBalances();
+      document.getElementById('play-btn').disabled = false;
+    }
+
+    // Play handler
+    function playHandler(){
+      const fee = users[current].temp;
+      const uObj = users[current];
+      const win = Math.random()<0.5;
+      if(win){
+        uObj.winning += fee*2;
+        const commission = (fee*2)*0.10;
+        users['admin'].winning += commission;
+        alert(`You won! ₹${(fee*2).toFixed(2)} added. Commission ₹${commission.toFixed(2)}.`);
+      } else {
+        users['admin'].winning += fee;
+        alert('You lost!');
+      }
+      uObj.temp = 0;
+      localStorage.setItem('game_users', JSON.stringify(users));
+      updateBalances();
+      renderColors();
+      document.getElementById('play-btn').disabled = true;
+    }
+
+    // Withdraw
+    document.getElementById('withdraw-btn').onclick = () => {
+      alert('Withdrawal not available in trial.');
+    };
+  </script>
+</body>
+</html>
