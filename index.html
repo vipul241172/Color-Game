@@ -8,6 +8,8 @@
     .hidden { display: none; }
     .color-box { width: 50px; height: 50px; margin: 5px; cursor: pointer; border: 2px solid #ccc; }
     .selected { border-color: #000; }
+    #user-list { list-style: none; padding: 0; }
+    #user-list li { padding: 8px; margin: 4px 0; background: #f3f3f3; border: 1px solid #ccc; cursor: move; }
   </style>
 </head>
 <body class="bg-gray-100 flex justify-center items-start py-10">
@@ -36,6 +38,8 @@
         <h2 class="text-lg font-bold">Welcome, <span id="display-user"></span></h2>
         <button id="logout-btn" class="text-red-500">Logout</button>
       </div>
+
+      <!-- User view -->
       <div id="user-section">
         <p>Wallet Balance: ₹<span id="balance">0</span></p>
         <p>Play Fee Pending (Temp): ₹<span id="temp-balance">0</span></p>
@@ -58,15 +62,17 @@
         </div>
         <p id="result" class="mt-4 font-bold"></p>
       </div>
+
+      <!-- Admin view -->
       <div id="admin-section" class="hidden mt-4">
+        <h3 class="font-bold mb-2">Registered Users (Drag to reorder):</h3>
+        <ul id="user-list"></ul>
+        <hr class="my-4" />
         <h3 class="font-bold">Admin Wallet</h3>
         <p>Admin Balance: ₹<span id="admin-balance">0</span></p>
       </div>
+
       <button id="withdraw-btn" class="bg-green-500 text-white px-4 py-2 rounded w-full mt-4">Withdraw via UPI</button>
       <footer class="text-center mt-6 text-sm text-gray-500">Developed by Vipul Chauhan</footer>
     </div>
   </div>
-
-  <script src="game.js"></script>
-</body>
-</html>
