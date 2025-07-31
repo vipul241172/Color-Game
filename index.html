@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Color Game with Wallet & Auth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .hidden { display: none; }
+    .color-box { width: 50px; height: 50px; margin: 5px; cursor: pointer; border: 2px solid #ccc; }
+    .selected { border-color: #000; }
+  </style>
+</head>
+<body class="bg-gray-100 flex justify-center items-start py-10">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <!-- Auth Forms -->
+    <div id="auth-screen">
+      <h2 class="text-xl font-bold mb-4 text-center">Sign Up / Login</h2>
+      <form id="signup-form" class="mb-4">
+        <input id="signup-username" type="text" placeholder="Username" class="w-full mb-2 p-2 border rounded" required />
+        <input id="signup-password" type="password" placeholder="Password" class="w-full mb-2 p-2 border rounded" required />
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded w-full">Sign Up</button>
+      </form>
+      <form id="login-form">
+        <input id="login-username" type="text" placeholder="Username" class="w-full mb-2 p-2 border rounded" required />
+        <input id="login-password" type="password" placeholder="Password" class="w-full mb-2 p-2 border rounded" required />
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded w-full">Login</button>
+      </form>
+      <p class="text-right mt-1">
+        <a href="#" id="reset-link" class="text-blue-500 underline">Forgot Password?</a>
+      </p>
+    </div>
+
+    <!-- Game & Wallet -->
+    <div id="dashboard" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">Welcome, <span id="display-user"></span></h2>
+        <button id="logout-btn" class="text-red-500">Logout</button>
+      </div>
+      <div id="user-section">
+        <p>Wallet Balance: ₹<span id="balance">0</span></p>
+        <p>Play Fee Pending (Temp): ₹<span id="temp-balance">0</span></p>
+        <hr class="my-4" />
+        <div class="mb-4">
+          <label for="mode" class="block mb-1">Select Game Mode:</label>
+          <select id="mode" class="w-full p-2 border rounded">
+            <option value="4">4 Color Game</option>
+            <option value="2">2 Color Game</option>
+          </select>
+        </div>
+        <div>
+          <p class="mb-2">Enter amount to play and select colors:</p>
+          <input id="play-amount" type="number" placeholder="Enter play amount" class="w-full mb-2 p-2 border rounded" min="1" />
+          <button id="deposit-btn" class="bg-yellow-500 text-white px-4 py-2 rounded w-full mb-2">Deposit & Pay Fee</button>
+          <div id="deposit-msg" class="text-red-500 mb-2"></div>
+          <button id="add-funds-btn" class="bg-blue-500 text-white px-4 py-2 rounded w-full mb-4 hidden">Add Funds</button>
+          <div id="colors" class="flex flex-wrap"></div>
+          <button id="play-btn" class="bg-indigo-500 text-white px-4 py-2 rounded mt-4" disabled>Play</button>
+        </div>
+        <p id="result" class="mt-4 font-bold"></p>
+      </div>
+      <div id="admin-section" class="hidden mt-4">
+        <h3 class="font-bold">Admin Wallet</h3>
+        <p>Admin Balance: ₹<span id="admin-balance">0</span></p>
+      </div>
+      <button id="withdraw-btn" class="bg-green-500 text-white px-4 py-2 rounded w-full mt-4">Withdraw via UPI</button>
+      <footer class="text-center mt-6 text-sm text-gray-500">Developed by Vipul Chauhan</footer>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
