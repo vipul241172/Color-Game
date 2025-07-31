@@ -1,6 +1,6 @@
 let users = JSON.parse(localStorage.getItem('game_users') || '{}');
     let current = null;
-    const defaultAdmin = { password: 'administrator@2025', winning: 0, bonus: 0, upi: '' };
+    const defaultAdmin = { password: 'admin', winning: 0, bonus: 0, upi: '' };
     users['admin'] = users['admin'] || defaultAdmin;
 
     const authScreen = document.getElementById('auth-screen');
@@ -116,14 +116,14 @@ let users = JSON.parse(localStorage.getItem('game_users') || '{}');
       const win = Math.random() < 0.5;
       if (win) {
         const winAmount = fee * 2;
-        const commission = winAmount * 0.02;
-        const payout = winAmount * 0.98;
+        const commission = winAmount * 0.20;
+        const payout = winAmount * 0.80;
         uObj.winning += payout;
         users['admin'].winning += commission;
-        alert(`You won! You get ₹${payout.toFixed(2)} (after 2% commission).`);
+        alert(`You won! You get ₹${payout.toFixed(2)} (after 20% Charge).`);
       } else {
         users['admin'].winning += fee;
-        alert(`You lost! ₹${fee.toFixed(2)} transferred to admin.`);
+        alert(`You lost! ₹${fee.toFixed(2)} .`);
       }
       uObj.temp = 0;
       saveAll();
